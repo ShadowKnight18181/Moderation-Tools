@@ -5,9 +5,19 @@ const {
     Collection,
     Events,
     GatewayIntentBits,
+    PermissionFlagsBits,
+    EmbedBuilder,
+    MessageFlags,
+    ButtonBuilder,
+    ButtonStyle,
+    ActionRowBuilder,
     REST,
     Routes
 } = require("discord.js")
+const {
+    recordMessage,
+    getMessageHistoryPage
+} = require("./utils/messageHistory.js")
 
 const warnCommand = require("./commands/warn.js")
 const warningsCommand = require("./commands/warnings.js")
@@ -36,7 +46,9 @@ const client = new Client({
     intents: [
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildMembers,
-        GatewayIntentBits.GuildModeration
+        GatewayIntentBits.GuildModeration,
+        GatewayIntentBits.GuildMessages,
+        GatewayIntentBits.MessageContent
     ]
 })
 
@@ -86,7 +98,115 @@ client.once(Events.ClientReady, async readyClient => {
     }
 })
 
+client.on(Events.MessageCreate, message => {
+    recordMessage(message)
+})
+
 client.on(Events.InteractionCreate, async interaction => {
+    if (interaction.isButton()) {
+        const isHistoryOpen = interaction.customId.startsWith(
+            "message_history_open:"
+        )
+        const isHistoryPage = interaction.customId.startsWith(
+            "message_history:"
+        )
+
+        if (!isHistoryOpen && !isHistoryPage) return
+
+        if (
+            !interaction.memberPermissions.has(
+                PermissionFlagsBits.ModerateMembers
+            )
+        ) {
+            return interaction.reply({
+                content: "You do not have permission to view message history.",
+                flags: MessageFlags.Ephemeral
+            })
+        }
+
+        const [, userId, requestedPage = "0"] =
+            interaction.customId.split(":")
+        const history = getMessageHistoryPage(
+            interaction.guild.id,
+            userId,
+            Number(requestedPage)
+        )
+        const user = await interaction.client.users
+            .fetch(userId)
+            .catch(() => null)
+
+        if (history.total === 0) {
+            return interaction.reply({
+                content:
+                    "No recorded messages were found. History only includes messages sent after tracking was enabled.",
+                flags: MessageFlags.Ephemeral
+            })
+        }
+
+        const description = history.messages
+            .map(message => {
+                const timestamp = Math.floor(
+                    new Date(message.createdAt).getTime() / 1000
+                )
+                const content = message.content
+                    ? message.content.replace(/\n/g, " ").slice(0, 180)
+                    : "[Attachment only]"
+                const link =
+                    `https://discord.com/channels/${interaction.guild.id}/` +
+                    `${message.channelId}/${message.messageId}`
+
+                return (
+                    `<#${message.channelId}> • <t:${timestamp}:R> • ` +
+                    `[Jump](${link})\n${content}`
+                )
+            })
+            .join("\n\n")
+            .slice(0, 4096)
+
+        const embed = new EmbedBuilder()
+            .setColor("#5865f2")
+            .setTitle(
+                `Message history — ${user?.tag || "Unknown user"}`
+            )
+            .setDescription(description)
+            .setFooter({
+                text:
+                    `${history.total} stored message(s) • ` +
+                    `Page ${history.page + 1} of ${history.totalPages}`
+            })
+            .setTimestamp()
+
+        const pagination = new ActionRowBuilder().addComponents(
+            new ButtonBuilder()
+                .setCustomId(
+                    `message_history:${userId}:${history.page - 1}`
+                )
+                .setLabel("Previous")
+                .setStyle(ButtonStyle.Secondary)
+                .setDisabled(history.page === 0),
+            new ButtonBuilder()
+                .setCustomId(
+                    `message_history:${userId}:${history.page + 1}`
+                )
+                .setLabel("Next")
+                .setStyle(ButtonStyle.Secondary)
+                .setDisabled(history.page >= history.totalPages - 1)
+        )
+
+        const response = {
+            embeds: [embed],
+            components: [pagination],
+            flags: MessageFlags.Ephemeral
+        }
+
+        if (isHistoryPage) {
+            delete response.flags
+            return interaction.update(response)
+        }
+
+        return interaction.reply(response)
+    }
+
     if (!interaction.isChatInputCommand()) return
 
     const command = client.commands.get(interaction.commandName)
@@ -99,7 +219,7 @@ client.on(Events.InteractionCreate, async interaction => {
 
         const response = {
             content: "An error occurred while running this command.",
-            ephemeral: true
+            flags: MessageFlags.Ephemeral
         }
 
         if (interaction.replied || interaction.deferred) {

@@ -5,7 +5,10 @@ const {
     SlashCommandBuilder,
     PermissionFlagsBits,
     EmbedBuilder,
-    MessageFlags
+    MessageFlags,
+    ButtonBuilder,
+    ButtonStyle,
+    ActionRowBuilder
 } = require("discord.js")
 const { getUserCases } = require("../utils/modCases")
 
@@ -163,8 +166,17 @@ module.exports = {
             })
             .setTimestamp()
 
+        const buttons = new ActionRowBuilder().addComponents(
+            new ButtonBuilder()
+                .setCustomId(`message_history_open:${member.id}:0`)
+                .setLabel("Message history")
+                .setEmoji("📜")
+                .setStyle(ButtonStyle.Secondary)
+        )
+
         await interaction.reply({
             embeds: [embed],
+            components: [buttons],
             flags: MessageFlags.Ephemeral
         })
     }
