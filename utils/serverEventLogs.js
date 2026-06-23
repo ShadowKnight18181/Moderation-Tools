@@ -79,6 +79,39 @@ async function getAuditExecutor(guild, type, targetId) {
     return entry?.executor || null
 }
 
+async function getMessageDeleteExecutor(guild, userId, channelId) {
+    const botMember = guild.members.me
+    if (
+        !botMember?.permissions.has(PermissionFlagsBits.ViewAuditLog)
+    ) {
+        return null
+    }
+
+    await new Promise(resolve => setTimeout(resolve, 1_000))
+
+    const auditLogs = await guild
+        .fetchAuditLogs({
+            type: AuditLogEvent.MessageDelete,
+            limit: 8
+        })
+        .catch(() => null)
+    if (!auditLogs) return null
+
+    const entry = auditLogs.entries.find(log => {
+        const auditChannelId =
+            log.extra?.channel?.id ||
+            log.extra?.channelId
+
+        return (
+            log.target?.id === userId &&
+            auditChannelId === channelId &&
+            Date.now() - log.createdTimestamp < 15_000
+        )
+    })
+
+    return entry?.executor || null
+}
+
 function formatPermissions(permissions) {
     const names = permissions.toArray()
     if (!names.length) return "None"
@@ -113,6 +146,17 @@ function registerServerEventLogs(client) {
                 ? formatContent(snapshot.content)
                 : "*Unavailable — this message was not cached before deletion*"
 
+        const deleteExecutor = snapshot.userId
+            ? await getMessageDeleteExecutor(
+                  guild,
+                  snapshot.userId,
+                  snapshot.channelId
+              )
+            : null
+        const deletedByValue = deleteExecutor
+            ? `${deleteExecutor}\n\`${deleteExecutor.id}\``
+            : "Likely the author, or unavailable"
+
         const embed = new EmbedBuilder()
             .setColor("#ed4245")
             .setTitle("Message Deleted")
@@ -125,6 +169,11 @@ function registerServerEventLogs(client) {
                 {
                     name: "Channel",
                     value: `<#${snapshot.channelId}>`,
+                    inline: true
+                },
+                {
+                    name: "Deleted by",
+                    value: deletedByValue,
                     inline: true
                 },
                 {
