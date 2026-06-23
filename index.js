@@ -11,6 +11,7 @@ const {
     ButtonBuilder,
     ButtonStyle,
     ActionRowBuilder,
+    Partials,
     REST,
     Routes
 } = require("discord.js")
@@ -27,8 +28,10 @@ const muteCommand = require("./commands/mute.js")
 const unmuteCommand = require("./commands/unmute.js")
 const kickCommand = require("./commands/kick.js")
 const banCommand = require("./commands/ban.js")
+const tempbanCommand = require("./commands/tempban.js")
 const unbanCommand = require("./commands/unban.js")
 const lockCommand = require("./commands/lock.js")
+const lockdownCommand = require("./commands/lockdown.js")
 const unlockCommand = require("./commands/unlock.js")
 const purgeCommand = require("./commands/purge.js")
 const sayCommand = require("./commands/say.js")
@@ -41,6 +44,24 @@ const roleinfoCommand = require("./commands/roleinfo.js")
 const userinfoCommand = require("./commands/userinfo.js")
 const caseCommand = require("./commands/case.js")
 const caselistCommand = require("./commands/caselist.js")
+const avatarCommand = require("./commands/avatar.js")
+const antispamCommand = require("./commands/antispam.js")
+const nickCommand = require("./commands/nick.js")
+const setlogCommand = require("./commands/setlog.js")
+const antijoinCommand = require("./commands/antijoin.js")
+const statusCommand = require("./commands/status.js")
+const blockedwordCommand = require("./commands/blockedword.js")
+const backupCommand = require("./commands/backup.js")
+const { restoreTempBans } = require("./utils/tempBans.js")
+const { registerServerEventLogs } = require("./utils/serverEventLogs.js")
+const { registerAntiSpam } = require("./utils/antiSpam.js")
+const {
+    registerAntiJoin,
+    restoreAntiJoin
+} = require("./utils/antiJoin.js")
+const {
+    registerBlockedWords
+} = require("./utils/blockedWords.js")
 
 const client = new Client({
     intents: [
@@ -49,8 +70,17 @@ const client = new Client({
         GatewayIntentBits.GuildModeration,
         GatewayIntentBits.GuildMessages,
         GatewayIntentBits.MessageContent
+    ],
+    partials: [
+        Partials.Message,
+        Partials.Channel
     ]
 })
+
+registerServerEventLogs(client)
+registerAntiSpam(client)
+registerAntiJoin(client)
+registerBlockedWords(client)
 
 client.commands = new Collection()
 client.commands.set(warnCommand.data.name, warnCommand)
@@ -61,8 +91,10 @@ client.commands.set(muteCommand.data.name, muteCommand)
 client.commands.set(unmuteCommand.data.name, unmuteCommand)
 client.commands.set(kickCommand.data.name, kickCommand)
 client.commands.set(banCommand.data.name, banCommand)
+client.commands.set(tempbanCommand.data.name, tempbanCommand)
 client.commands.set(unbanCommand.data.name, unbanCommand)
 client.commands.set(lockCommand.data.name, lockCommand)
+client.commands.set(lockdownCommand.data.name, lockdownCommand)
 client.commands.set(unlockCommand.data.name, unlockCommand)
 client.commands.set(purgeCommand.data.name, purgeCommand)
 client.commands.set(sayCommand.data.name, sayCommand)
@@ -75,11 +107,21 @@ client.commands.set(roleinfoCommand.data.name, roleinfoCommand)
 client.commands.set(userinfoCommand.data.name, userinfoCommand)
 client.commands.set(caseCommand.data.name, caseCommand)
 client.commands.set(caselistCommand.data.name, caselistCommand)
+client.commands.set(avatarCommand.data.name, avatarCommand)
+client.commands.set(antispamCommand.data.name, antispamCommand)
+client.commands.set(nickCommand.data.name, nickCommand)
+client.commands.set(setlogCommand.data.name, setlogCommand)
+client.commands.set(antijoinCommand.data.name, antijoinCommand)
+client.commands.set(statusCommand.data.name, statusCommand)
+client.commands.set(blockedwordCommand.data.name, blockedwordCommand)
+client.commands.set(backupCommand.data.name, backupCommand)
 
 const rest = new REST().setToken(process.env.DISCORD_TOKEN)
 
 client.once(Events.ClientReady, async readyClient => {
     console.log(`Moderation bot online as ${readyClient.user.tag}`)
+    restoreTempBans(readyClient)
+    restoreAntiJoin(readyClient)
 
     try {
         await rest.put(

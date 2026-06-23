@@ -2,6 +2,7 @@ const fs = require("fs")
 const path = require("path")
 const crypto = require("crypto")
 const { addModCase } = require("../utils/modCases")
+const { getLogChannel } = require("../utils/logSettings")
 
 const {
     SlashCommandBuilder,
@@ -126,9 +127,7 @@ module.exports = {
         `Please review the server rules. Contact the moderation team if you believe this was a mistake.`
         }).catch(() => {})
 
-        const logChannel = interaction.guild.channels.cache.get(
-            process.env.MOD_LOG_CHANNEL_ID
-        )
+        const logChannel = getLogChannel(interaction.guild)
 
         if (logChannel?.isTextBased()) {
             await logChannel.send({ embeds: [embed] }).catch(console.error)

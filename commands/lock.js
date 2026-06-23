@@ -5,6 +5,7 @@ const {
     MessageFlags,
     ChannelType
 } = require("discord.js")
+const { getLogChannel } = require("../utils/logSettings")
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -20,18 +21,9 @@ module.exports = {
                     ChannelType.GuildAnnouncement
                 )
                 .setRequired(false)
-        )
-        .addStringOption(option =>
-            option
-                .setName("reason")
-                .setDescription("Reason for locking the channel")
-                .setMaxLength(400)
-                .setRequired(false)
         ),
 
     async execute(interaction) {
-        const reason =
-            interaction.options.getString("reason") || "No reason provided"
         const channel =
             interaction.options.getChannel("channel") || interaction.channel
 
@@ -74,7 +66,7 @@ module.exports = {
                 CreatePrivateThreads: false
             },
             {
-                reason: `${reason} | Moderator: ${interaction.user.tag}`
+                reason: `Channel locked by ${interaction.user.tag}`
             }
         )
 
@@ -83,9 +75,7 @@ module.exports = {
             flags: MessageFlags.Ephemeral
         })
 
-        const logChannel = interaction.guild.channels.cache.get(
-            process.env.MOD_LOG_CHANNEL_ID
-        )
+        const logChannel = getLogChannel(interaction.guild)
 
         if (logChannel?.isTextBased()) {
             const embed = new EmbedBuilder()
@@ -101,10 +91,6 @@ module.exports = {
                         name: "Moderator",
                         value: `${interaction.user}`,
                         inline: true
-                    },
-                    {
-                        name: "Reason",
-                        value: reason
                     }
                 )
                 .setTimestamp()

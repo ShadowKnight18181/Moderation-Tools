@@ -4,6 +4,7 @@ const {
     EmbedBuilder,
     MessageFlags
 } = require("discord.js")
+const { getLogChannel } = require("../utils/logSettings")
 
 const roleColors = {
     default: null,
@@ -110,9 +111,7 @@ module.exports = {
             flags: MessageFlags.Ephemeral
         })
 
-        const logChannel = interaction.guild.channels.cache.get(
-            process.env.MOD_LOG_CHANNEL_ID
-        )
+        const logChannel = getLogChannel(interaction.guild)
 
         if (logChannel?.isTextBased()) {
             const embed = new EmbedBuilder()

@@ -8,6 +8,7 @@ const {
     MessageFlags
 } = require("discord.js")
 const { getModCase } = require("../utils/modCases")
+const { getLogChannel } = require("../utils/logSettings")
 
 const warningsPath = path.join(__dirname, "../data/warnings.json")
 
@@ -123,9 +124,7 @@ module.exports = {
             flags: MessageFlags.Ephemeral
         })
 
-        const logChannel = interaction.guild.channels.cache.get(
-            process.env.MOD_LOG_CHANNEL_ID
-        )
+        const logChannel = getLogChannel(interaction.guild)
 
         if (logChannel?.isTextBased()) {
             const embed = new EmbedBuilder()

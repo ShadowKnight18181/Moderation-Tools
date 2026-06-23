@@ -5,6 +5,7 @@ const {
     MessageFlags,
     ChannelType
 } = require("discord.js")
+const { getLogChannel } = require("../utils/logSettings")
 
 function parseSlowmode(input) {
     const value = input.trim().toLowerCase()
@@ -100,9 +101,7 @@ module.exports = {
             flags: MessageFlags.Ephemeral
         })
 
-        const logChannel = interaction.guild.channels.cache.get(
-            process.env.MOD_LOG_CHANNEL_ID
-        )
+        const logChannel = getLogChannel(interaction.guild)
 
         if (logChannel?.isTextBased()) {
             const embed = new EmbedBuilder()

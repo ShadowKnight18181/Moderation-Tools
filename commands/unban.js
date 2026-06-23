@@ -5,6 +5,8 @@ const {
     MessageFlags
 } = require("discord.js")
 const { addModCase } = require("../utils/modCases")
+const { removeTempBan } = require("../utils/tempBans")
+const { getLogChannel } = require("../utils/logSettings")
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -61,6 +63,7 @@ module.exports = {
             userId,
             `${reason} | Moderator: ${interaction.user.tag}`
         )
+        removeTempBan(interaction.guild.id, userId)
 
         const modCase = addModCase({
             guildId: interaction.guild.id,
@@ -75,9 +78,7 @@ module.exports = {
             flags: MessageFlags.Ephemeral
         })
 
-        const logChannel = interaction.guild.channels.cache.get(
-            process.env.MOD_LOG_CHANNEL_ID
-        )
+        const logChannel = getLogChannel(interaction.guild)
 
         if (logChannel?.isTextBased()) {
             const embed = new EmbedBuilder()

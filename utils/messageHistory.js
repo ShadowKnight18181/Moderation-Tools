@@ -54,6 +54,33 @@ const selectMessages = database.prepare(`
     LIMIT ? OFFSET ?
 `)
 
+const selectMessage = database.prepare(`
+    SELECT
+        message_id AS messageId,
+        guild_id AS guildId,
+        user_id AS userId,
+        channel_id AS channelId,
+        content,
+        attachments,
+        created_at AS createdAt
+    FROM message_history
+    WHERE message_id = ?
+`)
+
+const selectGuildMessages = database.prepare(`
+    SELECT
+        message_id AS messageId,
+        guild_id AS guildId,
+        user_id AS userId,
+        channel_id AS channelId,
+        content,
+        attachments,
+        created_at AS createdAt
+    FROM message_history
+    WHERE guild_id = ?
+    ORDER BY created_at ASC
+`)
+
 function recordMessage(message) {
     if (!message.guild || message.author.bot) return
 
@@ -94,7 +121,26 @@ function getMessageHistoryPage(guildId, userId, page = 0, pageSize = 10) {
     }
 }
 
+function getStoredMessage(messageId) {
+    const message = selectMessage.get(messageId)
+    if (!message) return null
+
+    return {
+        ...message,
+        attachments: JSON.parse(message.attachments)
+    }
+}
+
+function exportGuildMessages(guildId) {
+    return selectGuildMessages.all(guildId).map(message => ({
+        ...message,
+        attachments: JSON.parse(message.attachments)
+    }))
+}
+
 module.exports = {
     recordMessage,
-    getMessageHistoryPage
+    getMessageHistoryPage,
+    getStoredMessage,
+    exportGuildMessages
 }

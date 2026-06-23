@@ -5,6 +5,7 @@ const {
     MessageFlags
 } = require("discord.js")
 const { addModCase } = require("../utils/modCases")
+const { getLogChannel } = require("../utils/logSettings")
 
 function parseDuration(input) {
     const match = input.trim().toLowerCase().match(/^(\d+)(s|m|h|d)$/)
@@ -139,9 +140,7 @@ module.exports = {
             flags: MessageFlags.Ephemeral
         })
 
-        const logChannel = interaction.guild.channels.cache.get(
-            process.env.MOD_LOG_CHANNEL_ID
-        )
+        const logChannel = getLogChannel(interaction.guild)
 
         if (logChannel?.isTextBased()) {
             const embed = new EmbedBuilder()
