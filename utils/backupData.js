@@ -1,8 +1,7 @@
 const fs = require("fs")
 const path = require("path")
 const { exportGuildMessages } = require("./messageHistory")
-
-const dataDirectory = path.join(__dirname, "../data")
+const { dataDirectory } = require("./dataStore")
 
 function readJsonFile(filename) {
     try {

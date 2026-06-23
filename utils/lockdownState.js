@@ -1,8 +1,8 @@
 const fs = require("fs")
-const path = require("path")
+const { getDataPath } = require("./dataStore")
 const { PermissionFlagsBits } = require("discord.js")
 
-const statePath = path.join(__dirname, "../data/lockdowns.json")
+const statePath = getDataPath("lockdowns.json")
 const permissionNames = [
     "SendMessages",
     "AddReactions",

@@ -1,5 +1,5 @@
 const fs = require("fs")
-const path = require("path")
+const { getDataPath } = require("../utils/dataStore")
 
 const {
     SlashCommandBuilder,
@@ -8,7 +8,7 @@ const {
     MessageFlags
 } = require("discord.js")
 
-const warningsPath = path.join(__dirname, "../data/warnings.json")
+const warningsPath = getDataPath("warnings.json")
 
 module.exports = {
     data: new SlashCommandBuilder()

@@ -1,5 +1,5 @@
 const fs = require("fs")
-const path = require("path")
+const { getDataPath } = require("./dataStore")
 const {
     EmbedBuilder,
     Events,
@@ -8,7 +8,7 @@ const {
 const { addModCase } = require("./modCases")
 const { getLogChannel } = require("./logSettings")
 
-const settingsPath = path.join(__dirname, "../data/anti-spam.json")
+const settingsPath = getDataPath("anti-spam.json")
 const messageLimit = 8
 const timeWindow = 6_000
 const timeoutDuration = 5 * 60_000

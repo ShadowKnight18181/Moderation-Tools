@@ -1,5 +1,5 @@
 const fs = require("fs")
-const path = require("path")
+const { getDataPath } = require("./dataStore")
 const {
     EmbedBuilder,
     Events
@@ -8,7 +8,7 @@ const { addModCase } = require("./modCases")
 const { addTempBan } = require("./tempBans")
 const { getLogChannel } = require("./logSettings")
 
-const settingsPath = path.join(__dirname, "../data/anti-join.json")
+const settingsPath = getDataPath("anti-join.json")
 const timers = new Map()
 const maximumDuration = 24 * 60 * 60_000
 const temporaryBanDuration = 24 * 60 * 60_000

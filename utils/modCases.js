@@ -1,8 +1,8 @@
 const fs = require("fs")
-const path = require("path")
 const crypto = require("crypto")
+const { getDataPath } = require("./dataStore")
 
-const casesPath = path.join(__dirname, "../data/mod-cases.json")
+const casesPath = getDataPath("mod-cases.json")
 
 function readCases() {
     try {

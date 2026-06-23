@@ -1,10 +1,11 @@
 const fs = require("fs")
 const path = require("path")
 const { DatabaseSync } = require("node:sqlite")
+const { dataDirectory } = require("./dataStore")
 
 const databasePath =
     process.env.DATABASE_PATH ||
-    path.join(__dirname, "../data/moderation.db")
+    path.join(dataDirectory, "moderation.db")
 
 fs.mkdirSync(path.dirname(databasePath), { recursive: true })
 

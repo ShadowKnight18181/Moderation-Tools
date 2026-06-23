@@ -1,7 +1,7 @@
 const fs = require("fs")
-const path = require("path")
+const { getDataPath } = require("./dataStore")
 
-const warningsPath = path.join(__dirname, "../data/warnings.json")
+const warningsPath = getDataPath("warnings.json")
 
 function readWarnings() {
     try {

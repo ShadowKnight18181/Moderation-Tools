@@ -1,7 +1,7 @@
 const fs = require("fs")
-const path = require("path")
+const { getDataPath } = require("./dataStore")
 
-const tempBansPath = path.join(__dirname, "../data/temp-bans.json")
+const tempBansPath = getDataPath("temp-bans.json")
 const maximumTimer = 2_147_000_000
 const timers = new Map()
 

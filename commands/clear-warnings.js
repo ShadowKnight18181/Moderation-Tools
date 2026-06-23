@@ -1,5 +1,5 @@
 const fs = require("fs")
-const path = require("path")
+const { getDataPath } = require("../utils/dataStore")
 
 const {
     SlashCommandBuilder,
@@ -9,7 +9,7 @@ const {
 } = require("discord.js")
 const { getLogChannel } = require("../utils/logSettings")
 
-const warningsPath = path.join(__dirname, "../data/warnings.json")
+const warningsPath = getDataPath("warnings.json")
 
 function readWarnings() {
     return JSON.parse(fs.readFileSync(warningsPath, "utf8"))

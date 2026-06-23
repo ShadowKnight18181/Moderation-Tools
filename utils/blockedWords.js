@@ -1,5 +1,5 @@
 const fs = require("fs")
-const path = require("path")
+const { getDataPath } = require("./dataStore")
 const {
     EmbedBuilder,
     Events,
@@ -8,7 +8,7 @@ const {
 const { getLogChannel } = require("./logSettings")
 const { suppressDeletion } = require("./antiSpam")
 
-const settingsPath = path.join(__dirname, "../data/blocked-words.json")
+const settingsPath = getDataPath("blocked-words.json")
 
 function readSettings() {
     try {

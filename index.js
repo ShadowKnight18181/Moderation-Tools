@@ -1,5 +1,18 @@
 require("dotenv").config()
 
+const { ensureJsonFiles } = require("./utils/dataStore")
+
+ensureJsonFiles([
+    "anti-join.json",
+    "anti-spam.json",
+    "blocked-words.json",
+    "lockdowns.json",
+    "log-settings.json",
+    "mod-cases.json",
+    "temp-bans.json",
+    "warnings.json"
+])
+
 const {
     Client,
     Collection,
